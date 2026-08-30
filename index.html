@@ -47,116 +47,7 @@
         pointer-events: none;
         transition: none;
         z-index: 5;
-    }
-
-    .head {
-        position: absolute;
-        inset: 8px 5px 2px;
-        border-radius: 48% 48% 45% 45%;
-        background: #6b5b73;
-    }
-
-    .ear {
-        position: absolute;
-        top: 0;
-        width: 25px;
-        height: 28px;
-        background: #6b5b73;
-        z-index: -1;
-    }
-
-    .ear.left {
-        left: 10px;
-        transform: rotate(-28deg);
-        border-radius: 5px 18px 2px 18px;
-    }
-
-    .ear.right {
-        right: 10px;
-        transform: rotate(28deg);
-        border-radius: 18px 5px 18px 2px;
-    }
-
-    .ear::after {
-        content: "";
-        position: absolute;
-        inset: 6px;
-        background: #d996ad;
-        border-radius: inherit;
-    }
-
-    .eye {
-        position: absolute;
-        top: 30px;
-        width: 7px;
-        height: 10px;
-        background: #30272d;
-        border-radius: 50%;
-    }
-
-    .eye.left {
-        left: 23px;
-    }
-
-    .eye.right {
-        right: 23px;
-    }
-
-    .nose {
-        position: absolute;
-        left: 50%;
-        top: 42px;
-        transform: translateX(-50%);
-        width: 7px;
-        height: 5px;
-        background: #efa0b5;
-        border-radius: 50%;
-    }
-
-    .mouth {
-        position: absolute;
-        left: 50%;
-        top: 47px;
-        width: 15px;
-        height: 9px;
-        transform: translateX(-50%);
-        border-bottom: 2px solid #30272d;
-        border-radius: 0 0 50% 50%;
-    }
-
-    .whisker {
-        position: absolute;
-        width: 22px;
-        height: 1px;
-        background: #e9dce0;
-        top: 47px;
-        opacity: .8;
-    }
-
-    .whisker.left {
-        left: 0;
-        transform: rotate(8deg);
-    }
-
-    .whisker.right {
-        right: 0;
-        transform: rotate(-8deg);
-    }
-
-    .paws {
-        position: absolute;
-        bottom: -3px;
-        left: 12px;
-        right: 12px;
-        display: flex;
-        justify-content: space-between;
-    }
-
-    .paw {
-        width: 20px;
-        height: 13px;
-        background: #6b5b73;
-        border-radius: 50%;
+        object-fit: contain; /* Ensures the image fits without squishing */
     }
 
     .kiss {
@@ -194,26 +85,8 @@
     <span>click anywhere, meowsie will come and give you a mwah</span>
 </div>
 
-<div class="cat" id="cat">
-    <div class="ear left"></div>
-    <div class="ear right"></div>
-
-    <div class="head">
-        <div class="eye left"></div>
-        <div class="eye right"></div>
-
-        <div class="nose"></div>
-        <div class="mouth"></div>
-
-        <div class="whisker left"></div>
-        <div class="whisker right"></div>
-    </div>
-
-    <div class="paws">
-        <div class="paw"></div>
-        <div class="paw"></div>
-    </div>
-</div>
+<!-- Replaced the cat divs with an image tag -->
+<img src="img" class="cat" id="cat" alt="Meow">
 
 <script>
 const cat = document.getElementById("cat");
