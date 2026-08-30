@@ -226,8 +226,16 @@ cat.style.top = catY + "px";
 
 let animation = null;
 
-document.addEventListener("click", function(event) {
+// Audio Setup
+const sounds = [
+    new Audio('v1.m4a'),
+    new Audio('v2.m4a'),
+    new Audio('v3.m4a'),
+    new Audio('v4.m4a')
+];
+let currentSoundIndex = 0;
 
+document.addEventListener("click", function(event) {
     const targetX = event.clientX - 39;
     const targetY = event.clientY - 36;
 
@@ -244,7 +252,6 @@ document.addEventListener("click", function(event) {
     const startTime = performance.now();
 
     function move(time) {
-
         let progress = (time - startTime) / duration;
         progress = Math.min(progress, 1);
 
@@ -274,21 +281,28 @@ document.addEventListener("click", function(event) {
     animation = requestAnimationFrame(move);
 });
 
-
 function kiss(x, y) {
+    // 1. Create the visual kiss
+    const kissElement = document.createElement("div");
+    kissElement.className = "kiss";
+    kissElement.textContent = "💋";
 
-    const kiss = document.createElement("div");
+    kissElement.style.left = x + "px";
+    kissElement.style.top = y + "px";
 
-    kiss.className = "kiss";
-    kiss.textContent = "💋";
+    document.body.appendChild(kissElement);
 
-    kiss.style.left = x + "px";
-    kiss.style.top = y + "px";
+    // 2. Play the current sound
+    // Using cloneNode() so sounds can overlap if you click really fast
+    const soundToPlay = sounds[currentSoundIndex].cloneNode();
+    soundToPlay.play();
 
-    document.body.appendChild(kiss);
+    // 3. Move to the next sound in the loop (0 -> 1 -> 2 -> 3 -> 0)
+    currentSoundIndex = (currentSoundIndex + 1) % sounds.length;
 
+    // 4. Cleanup the visual element
     setTimeout(() => {
-        kiss.remove();
+        kissElement.remove();
     }, 800);
 }
 </script>
