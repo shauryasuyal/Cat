@@ -47,13 +47,16 @@
         pointer-events: none;
         transition: none;
         z-index: 5;
-        object-fit: contain; /* Ensures the image fits without squishing */
+        object-fit: contain;
     }
 
     .kiss {
         position: absolute;
         transform: translate(-50%, -50%);
         font-size: 30px;
+        font-weight: bold;
+        color: #ff4d6d; /* A nice pinkish red for the text */
+        white-space: nowrap; /* Keeps the text on one line */
         pointer-events: none;
         z-index: 20;
         animation: kiss .8s ease-out forwards;
@@ -85,7 +88,6 @@
     <span>click anywhere, meowsie will come and give you a mwah</span>
 </div>
 
-<!-- Replaced the cat divs with an image tag -->
 <img src="img" class="cat" id="cat" alt="Meow">
 
 <script>
@@ -158,7 +160,7 @@ function kiss(x, y) {
     // 1. Create the visual kiss
     const kissElement = document.createElement("div");
     kissElement.className = "kiss";
-    kissElement.textContent = "💋";
+    kissElement.textContent = "💋 MWAH"; // Added the MWAH text here
 
     kissElement.style.left = x + "px";
     kissElement.style.top = y + "px";
@@ -166,7 +168,6 @@ function kiss(x, y) {
     document.body.appendChild(kissElement);
 
     // 2. Play the current sound
-    // Using cloneNode() so sounds can overlap if you click really fast
     const soundToPlay = sounds[currentSoundIndex].cloneNode();
     soundToPlay.play();
 
