@@ -44,7 +44,9 @@
         position: absolute;
         width: 78px;
         height: 72px;
-        pointer-events: none;
+        /* Changed to auto so we can click the cat! */
+        pointer-events: auto; 
+        cursor: pointer;
         transition: none;
         z-index: 5;
         object-fit: contain;
@@ -53,7 +55,7 @@
     .kiss {
         position: absolute;
         transform: translate(-50%, -50%);
-        font-size: 30px; /* This controls the emoji size */
+        font-size: 30px; 
         font-weight: bold;
         color: #ff4d6d; 
         white-space: nowrap; 
@@ -62,42 +64,58 @@
         animation: kiss .8s ease-out forwards;
     }
 
-    /* Target the span specifically to make the text smaller */
     .kiss-text {
         font-size: 18px; 
-        vertical-align: middle; /* Keeps it aligned nicely with the larger emoji */
+        vertical-align: middle; 
     }
 
     @keyframes kiss {
-        0% {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(.3) rotate(-15deg);
-        }
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(.3) rotate(-15deg); }
+        25% { opacity: 1; transform: translate(-50%, -70%) scale(1.2) rotate(8deg); }
+        100% { opacity: 0; transform: translate(-50%, -125%) scale(.9) rotate(12deg); }
+    }
 
-        25% {
-            opacity: 1;
-            transform: translate(-50%, -70%) scale(1.2) rotate(8deg);
-        }
+    /* Styles for the Mini-Game */
+    #scoreBoard {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 28px;
+        font-weight: bold;
+        color: #ff4d6d;
+        z-index: 100;
+        display: none; /* Hidden until game starts */
+    }
 
-        100% {
-            opacity: 0;
-            transform: translate(-50%, -125%) scale(.9) rotate(12deg);
-        }
+    .bouncing-ball {
+        position: fixed;
+        font-size: 30px;
+        font-weight: bold;
+        color: #ff4d6d;
+        white-space: nowrap;
+        z-index: 50;
+        pointer-events: none;
     }
 </style>
 </head>
 
 <body>
 
-<div class="hint">
+<div class="hint" id="hint">
     <b>Boop da screen</b>
-    <span>click anywhere, meowsie will come and give you a mwah</span>
+    <span>click anywhere for a smooch, or <strong>click the cat</strong> to play a game!</span>
 </div>
+
+<!-- Score Pointer for the game -->
+<div id="scoreBoard">Points: 0</div>
 
 <img src="img" class="cat" id="cat" alt="Meow">
 
 <script>
 const cat = document.getElementById("cat");
+const hint = document.getElementById("hint");
+const scoreBoard = document.getElementById("scoreBoard");
 
 let catX = window.innerWidth / 2 - 39;
 let catY = window.innerHeight / 2 - 36;
@@ -116,31 +134,34 @@ const sounds = [
 ];
 let currentSoundIndex = 0;
 
+// GAME STATE VARIABLES
+let isPlayingGame = false;
+let gameLoopAnim = null;
+let ball = null;
+let ballX = 0, ballY = 0;
+let ballVX = 0, ballVY = 0;
+let score = 0;
+
+// NORMAL MODE: Click background to boop
 document.addEventListener("click", function(event) {
+    if (isPlayingGame) return; // Disable normal boop during the game
+
     const targetX = event.clientX - 39;
     const targetY = event.clientY - 36;
-
     const startX = catX;
     const startY = catY;
 
-    const distance = Math.hypot(
-        targetX - startX,
-        targetY - startY
-    );
-
+    const distance = Math.hypot(targetX - startX, targetY - startY);
     const duration = Math.max(500, distance * 5);
-
     const startTime = performance.now();
 
     function move(time) {
         let progress = (time - startTime) / duration;
         progress = Math.min(progress, 1);
 
-        // Smooth acceleration/deceleration
-        const eased =
-            progress < 0.5
-                ? 2 * progress * progress
-                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+        const eased = progress < 0.5
+            ? 2 * progress * progress
+            : 1 - Math.pow(-2 * progress + 2, 2) / 2;
 
         catX = startX + (targetX - startX) * eased;
         catY = startY + (targetY - startY) * eased;
@@ -155,37 +176,158 @@ document.addEventListener("click", function(event) {
         }
     }
 
-    if (animation) {
-        cancelAnimationFrame(animation);
-    }
-
+    if (animation) cancelAnimationFrame(animation);
     animation = requestAnimationFrame(move);
 });
 
 function kiss(x, y) {
-    // 1. Create the visual kiss
     const kissElement = document.createElement("div");
     kissElement.className = "kiss";
-    
-    // Changed textContent to innerHTML so we can style the text independently 
     kissElement.innerHTML = '💋 <span class="kiss-text">MWAH</span>';
-
     kissElement.style.left = x + "px";
-    kissElement.style.top = y + "px";
-
+    kissElement.style.top = y + "px" + 10;
     document.body.appendChild(kissElement);
 
-    // 2. Play the current sound
+    playSound();
+
+    setTimeout(() => kissElement.remove(), 800);
+}
+
+function playSound() {
     const soundToPlay = sounds[currentSoundIndex].cloneNode();
-    soundToPlay.play();
-
-    // 3. Move to the next sound in the loop (0 -> 1 -> 2 -> 3 -> 0)
+    soundToPlay.play().catch(e => console.log("Audio play prevented"));
     currentSoundIndex = (currentSoundIndex + 1) % sounds.length;
+}
 
-    // 4. Cleanup the visual element
-    setTimeout(() => {
-        kissElement.remove();
-    }, 800);
+// GAME MODE: Click the cat to start
+cat.addEventListener("click", function(event) {
+    if (isPlayingGame) return;
+    
+    // Stop the click from triggering the normal document background click
+    event.stopPropagation(); 
+    startGame();
+});
+
+function startGame() {
+    isPlayingGame = true;
+    if (animation) cancelAnimationFrame(animation);
+
+    // Update UI
+    hint.style.display = "none";
+    scoreBoard.style.display = "block";
+    score = 0;
+    scoreBoard.textContent = "Points: 0";
+
+    // Position Cat at bottom as paddle
+    catY = window.innerHeight - 80;
+    cat.style.top = catY + "px";
+
+    // Create the bouncing MWAH ball
+    ball = document.createElement("div");
+    ball.className = "bouncing-ball";
+    ball.innerHTML = '💋 <span class="kiss-text">MWAH</span>';
+    document.body.appendChild(ball);
+
+    // Set initial ball physics
+    ballX = window.innerWidth / 2;
+    ballY = 50;
+    ballVX = (Math.random() > 0.5 ? 4 : -4); // Random start direction
+    ballVY = 4; // Falling down
+
+    // Event listeners to control paddle (cat)
+    document.addEventListener("mousemove", movePaddle);
+    document.addEventListener("touchmove", movePaddle, {passive: true});
+
+    gameLoopAnim = requestAnimationFrame(gameLoop);
+}
+
+function movePaddle(e) {
+    if (!isPlayingGame) return;
+    
+    // Support both mouse and touch
+    let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    
+    catX = clientX - 39; // Center on cursor
+    
+    // Prevent moving off screen
+    if (catX < 0) catX = 0;
+    if (catX > window.innerWidth - 78) catX = window.innerWidth - 78;
+    
+    cat.style.left = catX + "px";
+}
+
+function gameLoop() {
+    if (!isPlayingGame) return;
+
+    ballX += ballVX;
+    ballY += ballVY;
+
+    const ballRect = ball.getBoundingClientRect();
+    const ballWidth = ballRect.width || 100;
+    const ballHeight = ballRect.height || 30;
+
+    // Wall Collisions (Left, Right, Top)
+    if (ballX <= 0) { ballX = 0; ballVX *= -1; }
+    if (ballX >= window.innerWidth - ballWidth) { ballX = window.innerWidth - ballWidth; ballVX *= -1; }
+    if (ballY <= 0) { ballY = 0; ballVY *= -1; }
+
+    // Paddle (Cat) Collision
+    const catRect = cat.getBoundingClientRect();
+    
+    if (
+        ballVY > 0 && // Only bounce if it's falling downwards
+        ballY + ballHeight >= catRect.top &&
+        ballY + ballHeight <= catRect.bottom &&
+        ballX + ballWidth >= catRect.left &&
+        ballX <= catRect.right
+    ) {
+        // Reverse direction and slightly increase speed to make it harder
+        ballVY *= -1.05; 
+        ballVX *= 1.05;
+        
+        // Push ball slightly above cat to prevent double-bouncing
+        ballY = catRect.top - ballHeight; 
+        
+        // Update score
+        score++;
+        scoreBoard.textContent = "Points: " + score;
+        
+        // Smooch!
+        playSound();
+    }
+
+    // Game Over condition (Hits the bottom)
+    if (ballY > window.innerHeight) {
+        gameOver();
+        return;
+    }
+
+    // Apply positions
+    ball.style.left = ballX + "px";
+    ball.style.top = ballY + "px";
+
+    gameLoopAnim = requestAnimationFrame(gameLoop);
+}
+
+function gameOver() {
+    isPlayingGame = false;
+    
+    // Cleanup listeners and elements
+    document.removeEventListener("mousemove", movePaddle);
+    document.removeEventListener("touchmove", movePaddle);
+    ball.remove();
+    
+    // Reset UI
+    scoreBoard.style.display = "none";
+    hint.style.display = "block";
+    
+    alert("Game Over! You collected " + score + " smooches!");
+
+    // Return Cat to center
+    catX = window.innerWidth / 2 - 39;
+    catY = window.innerHeight / 2 - 36;
+    cat.style.left = catX + "px";
+    cat.style.top = catY + "px";
 }
 </script>
 
