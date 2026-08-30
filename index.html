@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smooch Meow 🐱</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        overflow: hidden;
+        background: linear-gradient(135deg, #fff8f2, #fdf0f5);
+        font-family: Arial, sans-serif;
+        cursor: crosshair;
+    }
+
+    .hint {
+        position: fixed;
+        top: 25px;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+        color: #765f68;
+        pointer-events: none;
+        z-index: 10;
+    }
+
+    .hint b {
+        display: block;
+        font-size: 22px;
+        color: #57434c;
+    }
+
+    .hint span {
+        font-size: 13px;
+        opacity: 0.75;
+    }
+
+    .cat {
+        position: absolute;
+        width: 78px;
+        height: 72px;
+        pointer-events: none;
+        transition: none;
+        z-index: 5;
+    }
+
+    .head {
+        position: absolute;
+        inset: 8px 5px 2px;
+        border-radius: 48% 48% 45% 45%;
+        background: #6b5b73;
+    }
+
+    .ear {
+        position: absolute;
+        top: 0;
+        width: 25px;
+        height: 28px;
+        background: #6b5b73;
+        z-index: -1;
+    }
+
+    .ear.left {
+        left: 10px;
+        transform: rotate(-28deg);
+        border-radius: 5px 18px 2px 18px;
+    }
+
+    .ear.right {
+        right: 10px;
+        transform: rotate(28deg);
+        border-radius: 18px 5px 18px 2px;
+    }
+
+    .ear::after {
+        content: "";
+        position: absolute;
+        inset: 6px;
+        background: #d996ad;
+        border-radius: inherit;
+    }
+
+    .eye {
+        position: absolute;
+        top: 30px;
+        width: 7px;
+        height: 10px;
+        background: #30272d;
+        border-radius: 50%;
+    }
+
+    .eye.left {
+        left: 23px;
+    }
+
+    .eye.right {
+        right: 23px;
+    }
+
+    .nose {
+        position: absolute;
+        left: 50%;
+        top: 42px;
+        transform: translateX(-50%);
+        width: 7px;
+        height: 5px;
+        background: #efa0b5;
+        border-radius: 50%;
+    }
+
+    .mouth {
+        position: absolute;
+        left: 50%;
+        top: 47px;
+        width: 15px;
+        height: 9px;
+        transform: translateX(-50%);
+        border-bottom: 2px solid #30272d;
+        border-radius: 0 0 50% 50%;
+    }
+
+    .whisker {
+        position: absolute;
+        width: 22px;
+        height: 1px;
+        background: #e9dce0;
+        top: 47px;
+        opacity: .8;
+    }
+
+    .whisker.left {
+        left: 0;
+        transform: rotate(8deg);
+    }
+
+    .whisker.right {
+        right: 0;
+        transform: rotate(-8deg);
+    }
+
+    .paws {
+        position: absolute;
+        bottom: -3px;
+        left: 12px;
+        right: 12px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .paw {
+        width: 20px;
+        height: 13px;
+        background: #6b5b73;
+        border-radius: 50%;
+    }
+
+    .kiss {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        font-size: 30px;
+        pointer-events: none;
+        z-index: 20;
+        animation: kiss .8s ease-out forwards;
+    }
+
+    @keyframes kiss {
+        0% {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(.3) rotate(-15deg);
+        }
+
+        25% {
+            opacity: 1;
+            transform: translate(-50%, -70%) scale(1.2) rotate(8deg);
+        }
+
+        100% {
+            opacity: 0;
+            transform: translate(-50%, -125%) scale(.9) rotate(12deg);
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="hint">
+    <b>Boop da screen</b>
+    <span>click anywhere, meowsie will come and give you a mwah</span>
+</div>
+
+<div class="cat" id="cat">
+    <div class="ear left"></div>
+    <div class="ear right"></div>
+
+    <div class="head">
+        <div class="eye left"></div>
+        <div class="eye right"></div>
+
+        <div class="nose"></div>
+        <div class="mouth"></div>
+
+        <div class="whisker left"></div>
+        <div class="whisker right"></div>
+    </div>
+
+    <div class="paws">
+        <div class="paw"></div>
+        <div class="paw"></div>
+    </div>
+</div>
+
+<script>
+const cat = document.getElementById("cat");
+
+let catX = window.innerWidth / 2 - 39;
+let catY = window.innerHeight / 2 - 36;
+
+cat.style.left = catX + "px";
+cat.style.top = catY + "px";
+
+let animation = null;
+
+document.addEventListener("click", function(event) {
+
+    const targetX = event.clientX - 39;
+    const targetY = event.clientY - 36;
+
+    const startX = catX;
+    const startY = catY;
+
+    const distance = Math.hypot(
+        targetX - startX,
+        targetY - startY
+    );
+
+    const duration = Math.max(500, distance * 5);
+
+    const startTime = performance.now();
+
+    function move(time) {
+
+        let progress = (time - startTime) / duration;
+        progress = Math.min(progress, 1);
+
+        // Smooth acceleration/deceleration
+        const eased =
+            progress < 0.5
+                ? 2 * progress * progress
+                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+        catX = startX + (targetX - startX) * eased;
+        catY = startY + (targetY - startY) * eased;
+
+        cat.style.left = catX + "px";
+        cat.style.top = catY + "px";
+
+        if (progress < 1) {
+            animation = requestAnimationFrame(move);
+        } else {
+            kiss(event.clientX, event.clientY);
+        }
+    }
+
+    if (animation) {
+        cancelAnimationFrame(animation);
+    }
+
+    animation = requestAnimationFrame(move);
+});
+
+
+function kiss(x, y) {
+
+    const kiss = document.createElement("div");
+
+    kiss.className = "kiss";
+    kiss.textContent = "💋";
+
+    kiss.style.left = x + "px";
+    kiss.style.top = y + "px";
+
+    document.body.appendChild(kiss);
+
+    setTimeout(() => {
+        kiss.remove();
+    }, 800);
+}
+</script>
+
+</body>
+</html>
